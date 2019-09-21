@@ -24,7 +24,12 @@ import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-//import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -39,28 +44,29 @@ public class MainActivity extends AppCompatActivity {
     LocationManager locationManager;
     TextView locationView;
     LocationService locationServer;
-    double current_latitude, current_longitude;
+    Double current_latitude, current_longitude;
     ClientDuplexer server;
-
+    DatabaseReference database;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+        database = FirebaseDatabase.getInstance().getReference("message");
+        database.setValue("Hello, Worlds!");
 
-        try {
-            //this.server = new ClientDuplexer(new Socket("127.0.0.1", 1337));
 
-            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.INTERNET,
                     Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
-            mainLayout = findViewById(R.id.mainLayout);
-            popUp = new PopupWindow(this);
-            popUp.setFocusable(true);
-            sos = findViewById(R.id.button);
-            locationView = findViewById(R.id.locationView);
-            locationServer = new LocationService(this);
-            int status = 0;
-            if(locationServer.canGetLocation())
+        mainLayout = findViewById(R.id.mainLayout);
+        popUp = new PopupWindow(this);
+        popUp.setFocusable(true);
+        sos = findViewById(R.id.button);
+        locationView = findViewById(R.id.locationView);
+        locationServer = new LocationService(this);
+        int status;
+        if(locationServer.canGetLocation())
             {
                 status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(getApplicationContext());
 
@@ -76,24 +82,19 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("CHANGED LOCATION", "" + current_latitude + "-" + current_longitude);
                     }
                 }
-                Intent intent = new Intent(MainActivity.this, CanYouWalk.class);
-                intent.putExtra("server", server);
-                intent.putExtra("latitude", current_latitude);
-                intent.putExtra("longitude", current_longitude);
             }
             else
             {
                 locationServer.showSettingsAlert();
             }
             locationView.setText(current_latitude + "," + current_longitude);
-        }catch(IOException ioe){
-            System.err.println("Unable to connect to server"); // todo change to fancy android thingy
-        }
     }
 
     public void sendHelpOpenMap(View view){
 
         final Intent myIntent = new Intent(this, CanYouWalk.class);
+        myIntent.putExtra("latitude", current_latitude.toString());
+        myIntent.putExtra("longitude", current_longitude.toString());
         startActivity(myIntent);
 
        /* CountDownDialog countDownDialog = new CountDownDialog();

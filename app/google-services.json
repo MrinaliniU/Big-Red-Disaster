@@ -1,34 +1,42 @@
 {
   "project_info": {
-    "project_number": "461706891497",
-    "firebase_url": "https://gcp-demo-596a9.firebaseio.com",
-    "project_id": "gcp-demo-596a9",
-    "storage_bucket": "gcp-demo-596a9.appspot.com"
+    "project_number": "252638021033",
+    "firebase_url": "https://valiant-ocean-253617.firebaseio.com",
+    "project_id": "valiant-ocean-253617",
+    "storage_bucket": "valiant-ocean-253617.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:461706891497:android:d4f4a6806c120ab9892078",
+        "mobilesdk_app_id": "1:252638021033:android:67a3a96f2a7f868b99f0b8",
         "android_client_info": {
           "package_name": "com.fishes.bigreddisaster"
         }
       },
       "oauth_client": [
         {
-          "client_id": "461706891497-4ptnk61tcu8fj6mam67f80a3g1m6er7a.apps.googleusercontent.com",
+          "client_id": "252638021033-eotahfqtla9qtjtpg95ohlicbbapd5vj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fishes.bigreddisaster",
+            "certificate_hash": "f17f175411a58c2791acf4cc42d2176cac540514"
+          }
+        },
+        {
+          "client_id": "252638021033-58ui15ncakr150o5ufue6m83voq2270h.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyACpNrl_9SfGFMBn8lsQfIIhYIR3c4PHsY"
+          "current_key": "AIzaSyDEHtt2nwI-TC9b7LCL4avSfJkdDQbJKxU"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "461706891497-4ptnk61tcu8fj6mam67f80a3g1m6er7a.apps.googleusercontent.com",
+              "client_id": "252638021033-58ui15ncakr150o5ufue6m83voq2270h.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
