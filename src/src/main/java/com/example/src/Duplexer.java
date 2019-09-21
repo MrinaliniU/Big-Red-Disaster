@@ -9,7 +9,6 @@ import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Scanner;
 
-import sun.tools.jstat.Token;
 
 /**
  * Duplexer is the primary means of communication for the server and clients.
@@ -38,9 +37,9 @@ public class Duplexer implements AutoCloseable, Runnable {
         try {
             message = this.clientIn.nextLine();
 
-            String[] Tokens = message.split(":");
+            String[] tokens = message.split(":");
             System.out.println(message);
-            if (Tokens[Tokens.length - 1].toUpperCase().equals("T")) {
+            if (tokens[tokens.length - 1].toUpperCase().equals("T")) {
                 // can walk. --> query DB for shelters then push to client.
                 synchronized (this.getQueue) {
                     this.getQueue.add(message);
@@ -58,6 +57,20 @@ public class Duplexer implements AutoCloseable, Runnable {
         }
     }
 
+    public void sendMessage() {
+        synchronized (outQueue) {
+            if(outQueue.size() > 0) {
+                String message = "";
+                message += outQueue.poll();
+                try {
+                    this.clientOut.write(message + "\n");
+                } catch(IOException ioe) {
+                    System.err.println(ioe.getMessage());
+                }
+            }
+        }
+    }
+
     public void end() {
         this.sentinel = false;
     }
@@ -66,6 +79,7 @@ public class Duplexer implements AutoCloseable, Runnable {
     public void run() {
         while(sentinel) {
             recieveMessage();
+            sendMessage();
         }
     }
 
