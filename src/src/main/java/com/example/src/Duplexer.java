@@ -33,7 +33,7 @@ public class Duplexer implements AutoCloseable, Runnable {
     }
 
     public void recieveMessage() {
-        String message="";
+        String message;
         try {
             message = this.clientIn.nextLine();
 
