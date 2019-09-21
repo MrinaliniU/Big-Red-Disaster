@@ -1,5 +1,6 @@
 package com.fishes.bigreddisaster;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
@@ -12,6 +13,7 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -31,6 +33,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
     PopupWindow popUp;
@@ -47,10 +50,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        try {
-            //this.server = new ClientDuplexer(new Socket("127.0.0.1", 1337));
 
-            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.INTERNET,
                     Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
             mainLayout = findViewById(R.id.mainLayout);
@@ -60,8 +62,7 @@ public class MainActivity extends AppCompatActivity {
             locationView = findViewById(R.id.locationView);
             locationServer = new LocationService(this);
             int status = 0;
-            if(locationServer.canGetLocation())
-            {
+            if (locationServer.canGetLocation()) {
                 status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(getApplicationContext());
 
                 if (status == ConnectionResult.SUCCESS) {
@@ -77,20 +78,15 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 Intent intent = new Intent(MainActivity.this, CanYouWalk.class);
-                intent.putExtra("server", server);
+                System.out.println(server);
                 intent.putExtra("latitude", current_latitude);
                 intent.putExtra("longitude", current_longitude);
-            }
-            else
-            {
+            } else {
                 locationServer.showSettingsAlert();
             }
             locationView.setText(current_latitude + "," + current_longitude);
-        }catch(IOException ioe){
-            System.err.println("Unable to connect to server"); // todo change to fancy android thingy
-        }
-    }
 
+    }
     public void sendHelpOpenMap(View view){
 
         final Intent myIntent = new Intent(this, CanYouWalk.class);
@@ -101,15 +97,5 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-/*    private class ServerTask extends AsyncTask<ServerSocket, String, Void> {
-        @Override
-        protected Void doInBackground(ServerSocket... sockets) {
 
-        }
-
-
-        protected void onProgressUpdate(String... strings) {
-
-        }
-    }*/
 }

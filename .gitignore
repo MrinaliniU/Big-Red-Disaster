@@ -12,3 +12,7 @@
 /captures
 .externalNativeBuild
 .cxx
+src/build/*
+src/lib/*
+src/
+*.MF
