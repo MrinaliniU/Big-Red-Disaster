@@ -21,10 +21,14 @@ import java.util.concurrent.ExecutionException;
 
 
 public class DatabaseInterface {
-    private Queue<String> inQueue;
+    private final Queue<String> inQueue;
+    private final Queue<String> outQueue;
+    private final Queue<String> outputQueue;
 
-    public DatabaseInterface(Queue<String> inQueue) {
-        this.inQueue = inQueue;
+    public DatabaseInterface(Queue<String> inQueue, Queue<String> outQueue, Queue<String> outputQueue) {
+        this.inQueue = inQueue; // Messages will have format 'lat:long:mobile:plexerID'
+        this.outQueue = outQueue; // Messages will have format 'lat:long:mobile:plexerID'
+        this.outputQueue = outputQueue; // Messages will have format 'lat:long:plexerID'
     }
 
     public static void main(String[] args) {

@@ -7,6 +7,7 @@ import androidx.core.content.res.ResourcesCompat;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
@@ -29,8 +30,6 @@ import java.net.ServerSocket;
 public class MainActivity extends AppCompatActivity {
     PopupWindow popUp;
     ConstraintLayout mainLayout;
-    Button yes;
-    Button no;
     Button sos;
     LocationManager locationManager;
     TextView locationView;
@@ -41,7 +40,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.INTERNET,
+                Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
         mainLayout = findViewById(R.id.mainLayout);
         popUp = new PopupWindow(this);
         popUp.setFocusable(true);
@@ -56,42 +57,32 @@ public class MainActivity extends AppCompatActivity {
             if (status == ConnectionResult.SUCCESS) {
                 current_lattitude = locationServer.getLatitude();
                 current_longitude = locationServer.getLongitude();
-                Log.d("CURRENT LOCATION", "" + current_lattitude + "-"
-                        + current_longitude);
+                Log.d("CURRENT LOCATION", "" + current_lattitude + "," + current_longitude);
 
                 if (current_lattitude == 0.0 && current_longitude == 0.0) {
+                    Log.e("CURRENT LOCATION IS 0", "" + current_lattitude + "-" + current_longitude);
                     current_lattitude = 22.22;
                     current_longitude = 22.22;
-
+                    Log.e("CHANGED LOCATION", "" + current_lattitude + "-" + current_longitude);
                 }
-            } else {
-                current_lattitude = 22.22;
-                current_longitude = 22.22;
             }
-            Log.d("CHANGED LOCATION", "" + current_lattitude + "-"
-                    + current_longitude);
         }
         else
         {
             locationServer.showSettingsAlert();
         }
+        locationView.setText(current_lattitude + "," + current_longitude);
     }
 
     public void sendHelpOpenMap(View view){
-        LayoutInflater layoutInflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View customView = layoutInflater.inflate(R.layout.popup,null);
-        popUp = new PopupWindow(customView, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        popUp.showAtLocation(mainLayout, Gravity.CENTER, 0, 0);
-        yes = findViewById(R.id.yes);
-        no = findViewById(R.id.no);
-        /*Intent myIntent = new Intent(this, MapsActivity.class);
-        startActivity(myIntent);*/
+
+        final Intent myIntent = new Intent(this, CanYouWalk.class);
+        startActivity(myIntent);
 
        /* CountDownDialog countDownDialog = new CountDownDialog();
         countDownDialog.show(getSupportFragmentManager(), "fragment_countdownTimer");*/
 
     }
-
 
 /*    private class ServerTask extends AsyncTask<ServerSocket, String, Void> {
         @Override
