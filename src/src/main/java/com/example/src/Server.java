@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Main server to communicate between clients and DB. Handles primary logic and DB control.
@@ -11,8 +13,15 @@ import java.util.ArrayList;
 public class Server implements CommunicationProtocol, Runnable {
     private ServerSocket server; // ServerSocket is for communication with the client
     private ArrayList<Duplexer> duplexers;
+    private Queue<String> putQueue;
+    private Queue<String> getQueue;
+
 
     public Server(int port) {
+        this.putQueue = new LinkedList<String>();
+        this.getQueue = new LinkedList<String>();
+
+
         try {
             server = new ServerSocket(port);
         } catch(IOException ioe) {
@@ -28,7 +37,8 @@ public class Server implements CommunicationProtocol, Runnable {
         while(true){
             try {
                 Socket client = server.accept();
-                duplexers.add(new Duplexer(client));
+                duplexers.add(new Duplexer(client, putQueue, getQueue));
+                new Thread(duplexers.get(count)).start();
                 System.out.println("Connection #" + ++count);
             }catch(IOException ioe) {
                 System.err.println("Error accepting a new connection.");
