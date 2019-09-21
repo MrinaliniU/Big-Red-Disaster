@@ -24,6 +24,7 @@ import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+//import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.net.ServerSocket;
 
@@ -35,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     TextView locationView;
     LocationService locationServer;
     double current_lattitude, current_longitude;
+    //FirebaseFirestore db = FirebaseFirestore.getInstance();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,9 +45,9 @@ public class MainActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.INTERNET,
                 Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
-        mainLayout = findViewById(R.id.mainLayout);
+        /*mainLayout = findViewById(R.id.mainLayout);
         popUp = new PopupWindow(this);
-        popUp.setFocusable(true);
+        popUp.setFocusable(true);*/
         sos = findViewById(R.id.button);
         locationView = findViewById(R.id.locationView);
         locationServer = new LocationService(this);
