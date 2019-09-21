@@ -18,6 +18,8 @@ public class Server implements CommunicationProtocol, Runnable {
     private ArrayList<Duplexer> duplexers; // Each connection to the server gets a duplexer.
     private final Queue<String> putQueue; // Queue that the duplexers will wait on to perform IO
     private final Queue<String> getQueue; // """"
+    private final Queue<String> outputQueue;
+    private final DatabaseInterface dbi;
 
     /**
      * Constructor for server, opens the server on the supplied port and initializes the queues for
@@ -27,8 +29,9 @@ public class Server implements CommunicationProtocol, Runnable {
     public Server(int port) {
         this.putQueue = new LinkedList<String>();
         this.getQueue = new LinkedList<String>();
+        this.outputQueue = new LinkedList<String>();
         this.duplexers = new ArrayList<Duplexer>();
-
+        this.dbi = new DatabaseInterface(putQueue, getQueue, outputQueue);
         try {
             server = new ServerSocket(port);
         } catch(IOException ioe) {
@@ -48,8 +51,9 @@ public class Server implements CommunicationProtocol, Runnable {
         while(true){
             try {
                 Socket client = server.accept();
-                new Thread(new Duplexer(client, putQueue, getQueue)).start();
-                System.out.println("Connection #" + ++count + " established");
+                ++count; // Increment plexerID.
+                new Thread(new Duplexer(client, putQueue, getQueue,Integer.toString(count))).start();
+                System.out.println("Connection #" + count + " established");
             }catch(IOException ioe) {
                 System.err.println("Error accepting a new connection.");
             }

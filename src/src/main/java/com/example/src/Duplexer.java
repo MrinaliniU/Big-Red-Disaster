@@ -20,12 +20,14 @@ public class Duplexer implements AutoCloseable, Runnable {
     private final Queue<String> putQueue;
     private final Queue<String> getQueue;
     private final Queue<String> outQueue;
+    private final String plexerID;
     private boolean sentinel;
 
-    public Duplexer(Socket sock, Queue<String> putQueue, Queue<String> getQueue) throws IOException {
+    public Duplexer(Socket sock, Queue<String> putQueue, Queue<String> getQueue, String plexerID) throws IOException {
         this.sock = sock;
         this.putQueue = putQueue;
         this.getQueue = getQueue;
+        this.plexerID = plexerID;
         this.outQueue = new LinkedList<String>();
         this.clientIn = new Scanner(this.sock.getInputStream());
         this.clientOut = new PrintWriter(this.sock.getOutputStream());
@@ -42,12 +44,12 @@ public class Duplexer implements AutoCloseable, Runnable {
             if (tokens[tokens.length - 1].toUpperCase().equals("T")) {
                 // can walk. --> query DB for shelters then push to client.
                 synchronized (this.getQueue) {
-                    this.getQueue.add(message);
+                    this.getQueue.add(message+":"+plexerID);
                 }
 
             }
             synchronized (this.putQueue) {
-                this.putQueue.add(message);
+                this.putQueue.add(message+":"+plexerID);
             }
             System.out.println(getQueue);
             System.out.println(putQueue);
@@ -61,11 +63,14 @@ public class Duplexer implements AutoCloseable, Runnable {
         synchronized (outQueue) {
             if(outQueue.size() > 0) {
                 String message = "";
-                message += outQueue.poll();
-                try {
-                    this.clientOut.write(message + "\n");
-                } catch(IOException ioe) {
-                    System.err.println(ioe.getMessage());
+                String[] tokens = outQueue.peek().split(":");
+                if(tokens[tokens.length-1].equals(plexerID)) {
+                    message += outQueue.poll();
+                    try {
+                        this.clientOut.write(message + "\n");
+                    } catch(IOException ioe) {
+                        System.err.println(ioe.getMessage());
+                    }
                 }
             }
         }
