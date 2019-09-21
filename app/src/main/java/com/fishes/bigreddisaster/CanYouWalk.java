@@ -52,15 +52,19 @@ public class CanYouWalk extends AppCompatActivity {
                 final Intent mapIntent = new Intent(getApplicationContext(), MapsActivity.class);
                 String response = "";
                 String[] tokens;
+                AsyncTask resp=null;
                 new DuplexTask(lat,lng,true,true).execute(server); // Send message
                 try {
-                    AsyncTask resp = new DuplexTask(0, 0, false, false);
-                    response = (String) resp.get();
+                    resp = new DuplexTask(0, 0, false, false).execute(server);
+
                 }catch(Exception e){
                     System.err.println(e.getMessage());
+                }try {
+                    response = (String) resp.get();
+                }catch(Exception e) {
+                    System.err.println(e.getMessage());
                 }
-
-
+                Log.e("RESPONSE", response);
                 tokens = response.split(":"); // Contains data from the db.
 
                 startActivity(mapIntent);
