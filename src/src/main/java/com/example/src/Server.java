@@ -13,8 +13,8 @@ import java.util.Queue;
 public class Server implements CommunicationProtocol, Runnable {
     private ServerSocket server; // ServerSocket is for communication with the client
     private ArrayList<Duplexer> duplexers;
-    private Queue<String> putQueue;
-    private Queue<String> getQueue;
+    private final Queue<String> putQueue;
+    private final Queue<String> getQueue;
 
 
     public Server(int port) {
