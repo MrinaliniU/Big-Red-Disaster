@@ -24,6 +24,7 @@ import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+//import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -100,11 +101,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-   /* private class ServerTask extends AsyncTask<ServerSocket, String, Void> {
+/*    private class ServerTask extends AsyncTask<ServerSocket, String, Void> {
         @Override
         protected Void doInBackground(ServerSocket... sockets) {
 
-            return;
         }
 
 
