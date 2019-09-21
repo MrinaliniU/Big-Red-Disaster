@@ -1,18 +1,18 @@
 package com.example.src;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.Reader;
 import java.io.Writer;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Scanner;
 
+
+/**
+ * Duplexer is the primary means of communication for the server and clients.
+ */
 public class Duplexer implements AutoCloseable, Runnable {
     private final Writer clientOut;
     private final Scanner clientIn;
@@ -20,33 +20,60 @@ public class Duplexer implements AutoCloseable, Runnable {
     private final Queue<String> putQueue;
     private final Queue<String> getQueue;
     private final Queue<String> outQueue;
+    private final String plexerID;
     private boolean sentinel;
 
-    public Duplexer(Socket sock, Queue<String> putQueue, Queue<String> getQueue) throws IOException {
+    public Duplexer(Socket sock, Queue<String> putQueue, Queue<String> getQueue, String plexerID) throws IOException {
         this.sock = sock;
         this.putQueue = putQueue;
         this.getQueue = getQueue;
+        this.plexerID = plexerID;
         this.outQueue = new LinkedList<String>();
         this.clientIn = new Scanner(this.sock.getInputStream());
-        this.clientOut = new PrintWriter(sock.getOutputStream());
+        this.clientOut = new PrintWriter(this.sock.getOutputStream());
         this.sentinel = true;
     }
 
     public void recieveMessage() {
-        String message = this.clientIn.nextLine();
-        String[] Tokens = message.split(":");
-        if(Tokens[Tokens.length-1].equals("T")) {
-            // can walk. --> query DB for shelters then push to client.
-            synchronized (this.getQueue) {
-                this.getQueue.add(message);
+        String message;
+        try {
+            message = this.clientIn.nextLine();
+
+            String[] tokens = message.split(":");
+            System.out.println(message);
+            if (tokens[tokens.length - 1].toUpperCase().equals("T")) {
+                // can walk. --> query DB for shelters then push to client.
+                synchronized (this.getQueue) {
+                    this.getQueue.add(message+":"+plexerID);
+                }
+
             }
-
+            synchronized (this.putQueue) {
+                this.putQueue.add(message+":"+plexerID);
+            }
+            System.out.println(getQueue);
+            System.out.println(putQueue);
+            // Add to DB, if cannot walk then have Firebase dispatch a push to rescue workers.
+        } catch(NoSuchElementException nse){
+            //squash
         }
-        synchronized (this.putQueue){
-            this.putQueue.add(message);
-        }
-        // Add to DB, if cannot walk then have Firebase dispatch a push to rescue workers.
+    }
 
+    public void sendMessage() {
+        synchronized (outQueue) {
+            if(outQueue.size() > 0) {
+                String message = "";
+                String[] tokens = outQueue.peek().split(":");
+                if(tokens[tokens.length-1].equals(plexerID)) {
+                    message += outQueue.poll();
+                    try {
+                        this.clientOut.write(message + "\n");
+                    } catch(IOException ioe) {
+                        System.err.println(ioe.getMessage());
+                    }
+                }
+            }
+        }
     }
 
     public void end() {
@@ -57,7 +84,7 @@ public class Duplexer implements AutoCloseable, Runnable {
     public void run() {
         while(sentinel) {
             recieveMessage();
-
+            sendMessage();
         }
     }
 
