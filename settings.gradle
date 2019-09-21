@@ -1,2 +1,2 @@
-include ':app'
+include ':app', ':src'
 rootProject.name='Big Red Disaster'
