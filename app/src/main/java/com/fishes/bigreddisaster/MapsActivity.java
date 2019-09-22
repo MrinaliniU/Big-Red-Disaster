@@ -13,16 +13,33 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     String lat, lng;
 
     private GoogleMap mMap;
+    DatabaseReference mRef;
+/*    DatabaseReference s1_lat;
+    DatabaseReference s1_lng;
+
+    DatabaseReference s2_lat;
+    DatabaseReference s2_lng;
+
+    DatabaseReference s3_lat;
+    DatabaseReference s3_lng;
+
+    String s1Lat, s1Lng, s2Lat, s2Lng, s3Lat, s3Lng;*/
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
             if(extras == null) {
@@ -37,10 +54,47 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             lng= (String) savedInstanceState.getSerializable("lng");
             lat = (String) savedInstanceState.getSerializable("lat");
         }
+
+        mRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // This method is called once with the initial value and again
+                // whenever data at this location is updated.
+                String value = dataSnapshot.getValue(String.class);
+                //Log.d(TAG, "Value is: " + value);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w("Map Activity", "Failed to read value.", error.toException());
+            }
+        });
+
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+    }
+
+
+    private void locationListener(DatabaseReference dr){
+        dr.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // This method is called once with the initial value and again
+                // whenever data at this location is updated.
+                String value = dataSnapshot.getValue(String.class);
+                //Log.d(TAG, "Value is: " + value);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w("Map Activity", "Failed to read value.", error.toException());
+            }
+        });
     }
 
 
@@ -58,8 +112,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        LatLng currentLocation = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
+        mMap.addMarker(new MarkerOptions().position(currentLocation).title("Your Location"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
+
+        LatLng shelterOne = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
     }
 }
