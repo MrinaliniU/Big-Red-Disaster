@@ -11,29 +11,24 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     String lat, lng;
 
     private GoogleMap mMap;
     DatabaseReference mRef;
-/*    DatabaseReference s1_lat;
-    DatabaseReference s1_lng;
-
-    DatabaseReference s2_lat;
-    DatabaseReference s2_lng;
-
-    DatabaseReference s3_lat;
-    DatabaseReference s3_lng;
-
-    String s1Lat, s1Lng, s2Lat, s2Lng, s3Lat, s3Lng;*/
-
+    String s1Lat, s1Lng, s2Lat, s2Lng , s3Lat, s3Lng ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,46 +50,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             lat = (String) savedInstanceState.getSerializable("lat");
         }
 
-        mRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-                String value = dataSnapshot.getValue(String.class);
-                //Log.d(TAG, "Value is: " + value);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w("Map Activity", "Failed to read value.", error.toException());
-            }
-        });
+        mRef = FirebaseDatabase.getInstance().getReference("Shelters");
 
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-    }
-
-
-    private void locationListener(DatabaseReference dr){
-        dr.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-                String value = dataSnapshot.getValue(String.class);
-                //Log.d(TAG, "Value is: " + value);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w("Map Activity", "Failed to read value.", error.toException());
-            }
-        });
     }
 
 
@@ -111,11 +73,44 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
-        LatLng currentLocation = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
-        mMap.addMarker(new MarkerOptions().position(currentLocation).title("Your Location"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
+        mRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // This method is called once with the initial value and again
+                // whenever data at this location is updated.
+                s1Lat = String.valueOf(dataSnapshot.child("Shelter One").child("lat").getValue());
+                s1Lng = String.valueOf(dataSnapshot.child("Shelter One").child("lng").getValue());
 
-        LatLng shelterOne = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
+                s2Lat = String.valueOf(dataSnapshot.child("Shelter Two").child("lat").getValue());
+                s2Lng = String.valueOf(dataSnapshot.child("Shelter Two").child("lng").getValue());
+
+                s3Lat = String.valueOf(dataSnapshot.child("Shelter Three").child("lat").getValue());
+                s3Lng = String.valueOf(dataSnapshot.child("Shelter Three").child("lng").getValue());
+
+                LatLng shelterOne = new LatLng(Double.parseDouble(s1Lat), Double.parseDouble(s1Lng));
+                LatLng shelterTwo = new LatLng(Double.parseDouble(s2Lat), Double.parseDouble(s2Lng));
+                LatLng shelterThree = new LatLng(Double.parseDouble(s3Lat), Double.parseDouble(s3Lng));
+
+                mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.defaultMarker(250)).position(shelterOne).title("Shelter One"));
+                mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.defaultMarker(250)).position(shelterTwo).title("Shelter Two"));
+                mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.defaultMarker(250)).position(shelterThree).title("Shelter Three"));
+            }
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w("Map Activity", "Failed to read value.", error.toException());
+            }
+        });
+
+        // Add a marker in Sydney and move the camera
+        //LatLng currentLocation = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
+
+        //DEMO
+        LatLng currentLocation = new LatLng(Double.parseDouble("42.4671367"), Double.parseDouble("-76.5075061"));
+        mMap.addMarker(new MarkerOptions().position(currentLocation).title("You Are Here!"));
+
+
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(12), 2000, null);
     }
 }

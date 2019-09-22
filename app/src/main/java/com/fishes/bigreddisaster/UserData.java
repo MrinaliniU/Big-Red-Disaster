@@ -19,6 +19,15 @@ public class UserData implements Parcelable {
         this.isEmergency = in.readString();
     }
 
+    public static double getRandomNumber(){
+        double x = Math.random();
+        return x;
+    }
+    public UserData(String coOrdinates, String Em){
+        this.uid = Double.toString(getRandomNumber() * 10000);
+        this.coOrdinates = coOrdinates;
+        this.isEmergency = Em;
+    }
     public static final Parcelable.Creator<UserData> CREATOR = new Parcelable.Creator<UserData>() {
         @Override
         public UserData createFromParcel(Parcel source) {
