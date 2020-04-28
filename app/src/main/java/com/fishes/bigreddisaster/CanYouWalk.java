@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.ExecutionException;
 
 public class CanYouWalk extends AppCompatActivity {
 
@@ -27,15 +28,18 @@ public class CanYouWalk extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_can_you_walk);
+
+        // ~~init server
         try {
-            AsyncTask serverConn = new ServerTask().execute("10.0.2.2:1337");
+            AsyncTask serverConn = new InitServerTask().execute("10.0.2.2:1337");
             this.server = (ClientDuplexer) serverConn.get();
         }catch (Exception ioe){
             System.err.println(ioe.getMessage());
         }
-        this.lat = getIntent().getDoubleExtra("latitude",0);
+        // ~~ end init
+
+        this.lat = getIntent().getDoubleExtra("latitude", 0);
         this.lng = getIntent().getDoubleExtra("longitude",0);
-        System.out.println(server);
 
 
 
@@ -46,65 +50,85 @@ public class CanYouWalk extends AppCompatActivity {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             public void onClick(View v){
                 final Intent mapIntent = new Intent(getApplicationContext(), MapsActivity.class);
-                // ~~ construct message
-                String message = lat + ":" + lng + ":" + "T";
-                server.sendMessage(message);
-                String response = null;
+                String response = "";
+                String[] tokens;
+                AsyncTask resp=null;
+                new DuplexTask(lat,lng,true,true).execute(server); // Send message
                 try {
-                    AsyncTask respConn = new ResponseTask().execute(server);
-                    response = (String) respConn.get();
-                }catch (Exception ioe){
-                    System.err.println(ioe.getMessage());
+                    resp = new DuplexTask(0, 0, false, false).execute(server);
+
+                }catch(Exception e){
+                    System.err.println(e.getMessage());
+                }try {
+                    response = (String) resp.get();
+                }catch(Exception e) {
+                    System.err.println(e.getMessage());
                 }
-                System.out.println(response);
-                // ~~ end construction
+                Log.e("RESPONSE", response);
+                tokens = response.split(":"); // Contains data from the db.
+
                 startActivity(mapIntent);
             }
         });
         no.setOnClickListener(new View.OnClickListener(){
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             public void onClick(View v){
-                // ~~ construct message
-
-                String message = lat + ":" + lng + ":" + "F";
-                server.sendMessage(message);
-                // ~~ end construction
-
+                new DuplexTask(lat,lng,false,true).execute(server); // Send message
             }
         });
     }
-    private static class ServerTask extends AsyncTask<String, String, ClientDuplexer> {
+
+    private static class InitServerTask extends AsyncTask<String, String, ClientDuplexer> {
         @RequiresApi(api = Build.VERSION_CODES.KITKAT)
         @Override
         protected ClientDuplexer doInBackground(String... ipPort) {
             String[] tokens = ipPort[0].split(":");
             ClientDuplexer server = null;
-            Log.e("IPCONFIG", tokens[0] + " " + tokens[1]);
             try {
                 server = new ClientDuplexer(new Socket(tokens[0],Integer.parseInt(tokens[1])));
-                server.sendMessage("test:test:t");
+
             }catch(IOException ioe){
                 System.err.println(ioe.getMessage());
             }
             return server;
         }
+    }
 
+    /**
+     * Allows for asynchronus send/recieve from the client
+     */
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private static class DuplexTask extends AsyncTask<ClientDuplexer,String,String> {
+        double lat;
+        double lng;
+        boolean mobile;
+        boolean sending;
 
-        @Override
-        protected void onPostExecute(ClientDuplexer server){
-
+        DuplexTask(double lat, double lng, boolean mobile, boolean sending){
+            this.lat = lat;
+            this.lng = lng;
+            this.mobile = mobile;
+            this.sending = sending;
         }
 
-    }
-    private static class ResponseTask extends AsyncTask<ClientDuplexer,String,String> {
-
-
-
-        @RequiresApi(api = Build.VERSION_CODES.KITKAT)
         @Override
         protected String doInBackground(ClientDuplexer... server) {
-            return server[0].recieveMessage();
+            if(sending){
+                if(server[0] != null){
+                    String message = lat + ":" + lng + ":" + (mobile ? "T" : "F");
+                    server[0].sendMessage(message);
+                }else{
+                    return null;
+                }
+            }else{
+                if(server[0] != null) {
+                    String response = server[0].recieveMessage();
+                    return response;
+                }
+            }
+            return null;
         }
     }
+
 }
 

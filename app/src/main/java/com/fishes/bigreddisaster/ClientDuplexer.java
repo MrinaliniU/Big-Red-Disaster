@@ -32,7 +32,8 @@ public class ClientDuplexer implements AutoCloseable {
 
 
     public void sendMessage(String message){
-        pw.println(message);
+        pw.println(message+"\n");
+        pw.flush();
     }
 
     public String recieveMessage() {
